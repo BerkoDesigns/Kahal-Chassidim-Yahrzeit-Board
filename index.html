@@ -77,7 +77,7 @@
     font-family:'Cinzel', serif; font-size:calc(var(--pf-scale) * 2.3vh); letter-spacing:0.5px; font-weight:800;
     color:#0c0704; text-shadow:none; margin-top:0.5vh;
   }
-  .plaque .date{ font-size:calc(var(--pf-scale) * 2.8vh); font-weight:700; color:#0c0704; margin-top:0.4vh; letter-spacing:0.5px; }
+  .plaque .date{ font-size:calc(var(--pf-scale) * 2.8vh); font-weight:700; color:#0c0704; margin-top:0.4vh; letter-spacing:0.5px; text-align:right; }
   .plaque.no-name .date{ text-align:center; }
   .bulb{
     position:absolute; top:50%; transform:translateY(-50%);
@@ -150,7 +150,7 @@
 
 <script>
   // ---- CONFIG (set per shul) ----
-            const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
+              const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
   const SLOTS_PER_COLUMN = 6;
   const COLUMNS = 4;
   const SHOW_ENGLISH_NAME = true; // TBD per your note — flip to false to hide
@@ -188,7 +188,7 @@
             <div class="bulb bulb-right"></div>
             <div class="heb">${p.hebrewName || ''}</div>
             ${hasName ? `<div class="name">${p.name}</div>` : ''}
-            <div class="date">${p.hebDay || ''} ${p.hebMonth || ''}${p.hebYear ? ' ' + p.hebYear : ''}</div>
+            <div class="date">${p.hebDateDisplay || ''}</div>
           `;
         } else {
           el.className = 'plaque reserved';
