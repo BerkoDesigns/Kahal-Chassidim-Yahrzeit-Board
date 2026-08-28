@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Yahrzeit Board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Suez+One&display=swap" rel="stylesheet">
 <style>
   :root{
     --wall-dark: #1c130d;
@@ -24,7 +24,7 @@
     display:flex; align-items:center; justify-content:center;
   }
   .board-frame{
-    width:98vw; height:98vh; max-width:1900px;
+    width:calc(100vw - 2vmin); height:calc(100vh - 2vmin); max-width:1900px;
     padding:2.2vh 2.2vw 1.6vh;
     display:flex; flex-direction:column;
     overflow:hidden;
@@ -33,6 +33,7 @@
     box-shadow: 0 0 0 2px #0c0703, 0 0 0 6px #5c4321, 0 30px 70px rgba(0,0,0,0.7), inset 0 0 60px rgba(0,0,0,0.55);
   }
   .header{
+    position:relative;
     flex-shrink:0;
     text-align:center;
     padding:2.4vh 3vw 2.6vh;
@@ -42,11 +43,11 @@
     clip-path: polygon(0 12px, 6% 0, 94% 0, 100% 12px, 100% 100%, 0 100%);
   }
   .header .eyebrow{
-    font-family:'Cinzel', serif; font-size:2.6vh; letter-spacing:5px; font-weight:700;
+    font-family:'Suez One', serif; font-size:2.6vh; letter-spacing:3px; font-weight:400;
     color:#0c0704; text-shadow:none; margin-bottom:0.8vh;
   }
   .header .dedication{
-    font-family:'Cinzel', serif; font-size:5.4vh; font-weight:900; letter-spacing:2px;
+    font-family:'Suez One', serif; font-size:5.4vh; font-weight:400; letter-spacing:1px;
     color:#0c0704; text-shadow:none;
   }
   .grid{
@@ -70,14 +71,15 @@
     --pf-scale: 1;
   }
   .plaque .heb{
-    font-size:calc(var(--pf-scale) * 3.1vh); font-weight:800; color:#0c0704; text-align:right;
-    text-shadow:none; line-height:1.2;
+    font-family:'Suez One', serif;
+    font-size:calc(var(--pf-scale) * 3.1vh); font-weight:400; color:#0c0704; text-align:right;
+    text-shadow:none; line-height:1.25;
   }
   .plaque .name{
     font-family:'Cinzel', serif; font-size:calc(var(--pf-scale) * 2.3vh); letter-spacing:0.5px; font-weight:800;
     color:#0c0704; text-shadow:none; margin-top:0.5vh;
   }
-  .plaque .date{ font-size:calc(var(--pf-scale) * 2.8vh); font-weight:700; color:#0c0704; margin-top:0.4vh; letter-spacing:0.5px; text-align:right; }
+  .plaque .date{ font-family:'Suez One', serif; font-size:calc(var(--pf-scale) * 2.8vh); font-weight:400; color:#0c0704; margin-top:0.4vh; letter-spacing:0.5px; text-align:right; }
   .plaque.no-name .date{ text-align:center; }
   .bulb{
     position:absolute; top:50%; transform:translateY(-50%);
@@ -103,6 +105,10 @@
     background: radial-gradient(circle at 35% 30%, #fff3cf, var(--glow) 55%, #c98a2a 100%);
     box-shadow: 0 0 6px 2px var(--glow), 0 0 16px 6px rgba(255,207,107,0.8);
   }
+  .bulb.always-on{
+    background: radial-gradient(circle at 35% 30%, #fff3cf, var(--glow) 55%, #c98a2a 100%);
+    box-shadow: 0 0 6px 2px var(--glow), 0 0 16px 6px rgba(255,207,107,0.8);
+  }
   @keyframes flicker{
     0%,100%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 4px rgba(0,0,0,0.35),
       0 0 14px 4px rgba(255,207,107,0.55), 0 0 34px 10px rgba(255,180,60,0.35); }
@@ -111,22 +117,24 @@
   }
   .footer{ flex-shrink:0; margin-top:2vh; text-align:center; }
   .footer .plate{
+    position:relative;
     display:inline-block; padding:1.2vh 3.4vw; border-radius:20px;
     background: linear-gradient(180deg, var(--bronze-hi), var(--bronze-low));
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 5px rgba(0,0,0,0.5), 0 6px 16px rgba(0,0,0,0.5);
   }
   .footer .plate span{
-    font-family:'Cinzel', serif; font-size:2.8vh; letter-spacing:4px; font-weight:800;
+    font-family:'Suez One', serif; font-size:2.8vh; letter-spacing:2px; font-weight:400;
     color:#0c0704; text-shadow:none;
   }
   .donor-plate{ flex-shrink:0; margin-top:1.2vh; text-align:center; }
   .donor-plate .inner{
+    position:relative;
     display:inline-block; padding:0.8vh 2.6vw; border-radius:14px;
     background: linear-gradient(180deg, var(--bronze-mid), var(--bronze-low));
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -2px 4px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.4);
   }
   .donor-plate span{
-    font-family:'Cormorant Garamond', serif; font-style:italic; font-size:2.3vh; font-weight:700; letter-spacing:1px;
+    font-family:'Suez One', serif; font-size:2.3vh; font-weight:400; letter-spacing:0.5px;
     color:#f5e6bc; text-shadow:none;
   }
   #screensaver{
@@ -140,17 +148,27 @@
   <div id="screensaver"></div>
   <div class="board-frame">
     <div class="header">
+      <div class="bulb always-on bulb-left"></div>
+      <div class="bulb always-on bulb-right"></div>
       <div class="eyebrow" id="headerEyebrow">IN LOVING MEMORY OF</div>
       <div class="dedication" id="headerDedication">Loading…</div>
     </div>
     <div class="grid" id="grid"></div>
-    <div class="footer"><div class="plate"><span id="footerText"></span></div></div>
-    <div class="donor-plate"><div class="inner"><span id="donorText"></span></div></div>
+    <div class="footer"><div class="plate">
+      <div class="bulb always-on bulb-left"></div>
+      <div class="bulb always-on bulb-right"></div>
+      <span id="footerText"></span>
+    </div></div>
+    <div class="donor-plate"><div class="inner">
+      <div class="bulb always-on bulb-left"></div>
+      <div class="bulb always-on bulb-right"></div>
+      <span id="donorText"></span>
+    </div></div>
   </div>
 
 <script>
   // ---- CONFIG (set per shul) ----
-                const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
+                      const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
   const SLOTS_PER_COLUMN = 6;
   const COLUMNS = 4;
   const SHOW_ENGLISH_NAME = true; // TBD per your note — flip to false to hide
