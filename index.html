@@ -55,26 +55,28 @@
     border-radius:6px; box-shadow: inset 0 0 0 1px rgba(217,178,92,0.15);
   }
   .plaque{
-    position:relative; padding:1.4vh 1vw 1.4vh 3.4vw; border-radius:3px;
+    position:relative; padding:1.4vh 3.4vw; border-radius:3px;
     background: linear-gradient(180deg, var(--bronze-hi) 0%, var(--bronze-mid) 50%, var(--bronze-low) 100%);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -2px 4px rgba(0,0,0,0.45), 0 2px 5px rgba(0,0,0,0.45);
     transition: box-shadow .6s ease, filter .6s ease;
   }
   .plaque .heb{
-    font-size:2.6vh; font-weight:600; color:#2a1c0c; text-align:right;
-    text-shadow:0 1px 0 rgba(255,255,255,0.2); line-height:1.15;
+    font-size:2.6vh; font-weight:800; color:#0c0704; text-align:right;
+    text-shadow:none; line-height:1.15;
   }
   .plaque .name{
-    font-family:'Cinzel', serif; font-size:2vh; letter-spacing:0.5px; font-weight:700;
-    color:#241708; text-shadow:0 1px 0 rgba(255,255,255,0.2); margin-top:0.4vh;
+    font-family:'Cinzel', serif; font-size:2vh; letter-spacing:0.5px; font-weight:800;
+    color:#0c0704; text-shadow:none; margin-top:0.4vh;
   }
-  .plaque .date{ font-size:1.9vh; color:#3a2a12; margin-top:0.2vh; letter-spacing:0.5px; }
+  .plaque .date{ font-size:2.6vh; font-weight:700; color:#0c0704; margin-top:0.3vh; letter-spacing:0.5px; }
   .bulb{
-    position:absolute; left:0.9vw; top:50%; transform:translateY(-50%);
+    position:absolute; top:50%; transform:translateY(-50%);
     width:1.6vh; height:1.6vh; border-radius:50%;
     background: radial-gradient(circle at 35% 30%, #6b5638, #2a2013);
     box-shadow: inset 0 0 2px rgba(0,0,0,0.8);
   }
+  .bulb.bulb-left{ left:0.9vw; }
+  .bulb.bulb-right{ right:0.9vw; }
   .plaque.reserved{
     background: linear-gradient(180deg, #6b5636 0%, #4a3a22 60%, #362a17 100%);
     display:flex; align-items:center; justify-content:center; padding:1.4vh 1vw;
@@ -116,9 +118,15 @@
     font-family:'Cormorant Garamond', serif; font-style:italic; font-size:1.7vh; letter-spacing:1px;
     color:#e9d6a8; text-shadow:0 1px 0 rgba(0,0,0,0.25);
   }
+  #screensaver{
+    position:fixed; inset:0; background:#000; opacity:0; pointer-events:none;
+    transition: opacity 3s ease; z-index:999;
+  }
+  #screensaver.active{ opacity:1; pointer-events:all; }
 </style>
 </head>
 <body>
+  <div id="screensaver"></div>
   <div class="board-frame">
     <div class="header">
       <div class="eyebrow" id="headerEyebrow">IN LOVING MEMORY OF</div>
@@ -131,7 +139,7 @@
 
 <script>
   // ---- CONFIG (set per shul) ----
-  const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
+    const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
   const SLOTS_PER_COLUMN = 6;
   const COLUMNS = 4;
   const SHOW_ENGLISH_NAME = true; // TBD per your note — flip to false to hide
@@ -164,7 +172,8 @@
         if(p){
           el.className = 'plaque' + (p.lit ? ' lit' : '');
           el.innerHTML = `
-            <div class="bulb"></div>
+            <div class="bulb bulb-left"></div>
+            <div class="bulb bulb-right"></div>
             <div class="heb">${p.hebrewName || ''}</div>
             ${SHOW_ENGLISH_NAME && p.name ? `<div class="name">${p.name}</div>` : ''}
             <div class="date">${p.hebDay || ''} ${p.hebMonth || ''}</div>
@@ -181,6 +190,15 @@
 
   loadBoard();
   setInterval(loadBoard, 5 * 60 * 1000); // refresh every 5 minutes
+
+  // Night screensaver — dims to black 1:00 AM to 5:00 AM, kiosk's local clock
+  function updateScreensaver(){
+    const h = new Date().getHours();
+    const isNight = h >= 1 && h < 5;
+    document.getElementById('screensaver').classList.toggle('active', isNight);
+  }
+  updateScreensaver();
+  setInterval(updateScreensaver, 60 * 1000); // check every minute
 </script>
 </body>
 </html>
