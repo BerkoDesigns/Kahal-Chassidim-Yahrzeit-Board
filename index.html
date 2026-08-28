@@ -24,7 +24,7 @@
     display:flex; align-items:center; justify-content:center;
   }
   .board-frame{
-    width:96vw; height:96vh; max-width:1900px;
+    width:92vw; height:92vh; max-width:1900px;
     padding:2.2vh 2.2vw 1.6vh;
     display:flex; flex-direction:column;
     overflow:hidden;
@@ -67,16 +67,17 @@
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -2px 4px rgba(0,0,0,0.45), 0 2px 5px rgba(0,0,0,0.45);
     transition: box-shadow .6s ease, filter .6s ease;
     overflow:hidden;
+    --pf-scale: 1;
   }
   .plaque .heb{
-    font-size:3.1vh; font-weight:800; color:#0c0704; text-align:right;
+    font-size:calc(var(--pf-scale) * 3.1vh); font-weight:800; color:#0c0704; text-align:right;
     text-shadow:none; line-height:1.2;
   }
   .plaque .name{
-    font-family:'Cinzel', serif; font-size:2.3vh; letter-spacing:0.5px; font-weight:800;
+    font-family:'Cinzel', serif; font-size:calc(var(--pf-scale) * 2.3vh); letter-spacing:0.5px; font-weight:800;
     color:#0c0704; text-shadow:none; margin-top:0.5vh;
   }
-  .plaque .date{ font-size:2.8vh; font-weight:700; color:#0c0704; margin-top:0.4vh; letter-spacing:0.5px; }
+  .plaque .date{ font-size:calc(var(--pf-scale) * 2.8vh); font-weight:700; color:#0c0704; margin-top:0.4vh; letter-spacing:0.5px; }
   .plaque.no-name .date{ text-align:center; }
   .bulb{
     position:absolute; top:50%; transform:translateY(-50%);
@@ -149,7 +150,7 @@
 
 <script>
   // ---- CONFIG (set per shul) ----
-          const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
+            const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
   const SLOTS_PER_COLUMN = 6;
   const COLUMNS = 4;
   const SHOW_ENGLISH_NAME = true; // TBD per your note — flip to false to hide
@@ -197,6 +198,25 @@
       }
       grid.appendChild(col);
     }
+
+    fitPlaqueText();
+  }
+
+  // Auto-shrinks each plaque's text scale until its content fits without
+  // clipping — same measure-and-fit approach as the status-box sizing on
+  // the other two boards, since name length/line-wrap varies per person
+  // and a single fixed font size can't safely fit every case.
+  function fitPlaqueText(){
+    document.fonts.ready.then(() => {
+      document.querySelectorAll('.plaque:not(.reserved)').forEach(el => {
+        let scale = 1.0;
+        el.style.setProperty('--pf-scale', scale);
+        while (el.scrollHeight > el.clientHeight && scale > 0.5) {
+          scale -= 0.05;
+          el.style.setProperty('--pf-scale', scale);
+        }
+      });
+    });
   }
 
   loadBoard();
