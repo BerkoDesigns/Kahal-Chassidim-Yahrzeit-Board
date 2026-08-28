@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Yahrzeit Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wall-dark: #1c130d;
+    --bronze-hi: #a67c3d;
+    --bronze-mid: #7a5a30;
+    --bronze-low: #4a3319;
+    --gold: #d9b25c;
+    --plate-text: #f1e0b0;
+    --glow: #ffcf6b;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background: radial-gradient(ellipse at 50% 0%, #2a1d13 0%, var(--wall-dark) 60%, #100a06 100%);
+    font-family:'Cormorant Garamond', serif;
+    color:var(--plate-text);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .board-frame{
+    width:96vw; max-width:1900px;
+    padding:2.2vh 2.2vw 1.6vh;
+    background: linear-gradient(155deg, #3a2814 0%, #241708 55%, #140d05 100%);
+    border-radius:14px;
+    box-shadow: 0 0 0 2px #0c0703, 0 0 0 6px #5c4321, 0 30px 70px rgba(0,0,0,0.7), inset 0 0 60px rgba(0,0,0,0.55);
+  }
+  .header{
+    text-align:center;
+    padding:2.4vh 3vw 2.6vh;
+    margin-bottom:2vh;
+    background: linear-gradient(180deg, var(--bronze-hi) 0%, var(--bronze-mid) 45%, var(--bronze-low) 100%);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.18), inset 0 -3px 8px rgba(0,0,0,0.5), 0 6px 18px rgba(0,0,0,0.5);
+    clip-path: polygon(0 12px, 6% 0, 94% 0, 100% 12px, 100% 100%, 0 100%);
+  }
+  .header .eyebrow{
+    font-family:'Cinzel', serif; font-size:2vh; letter-spacing:5px; font-weight:600;
+    color:#2a1c0c; text-shadow:0 1px 0 rgba(255,255,255,0.25); margin-bottom:0.6vh;
+  }
+  .header .dedication{
+    font-family:'Cinzel', serif; font-size:4.4vh; font-weight:900; letter-spacing:2px;
+    color:#2a1c0c; text-shadow:0 1px 0 rgba(255,255,255,0.3);
+  }
+  .grid{
+    display:grid; grid-template-columns: repeat(4, 1fr); gap:1.4vh 1.2vw; padding:1vh 0.4vw 0.4vh;
+  }
+  .column{
+    display:flex; flex-direction:column; gap:1vh; padding:1vh 0.6vw;
+    background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.32));
+    border-radius:6px; box-shadow: inset 0 0 0 1px rgba(217,178,92,0.15);
+  }
+  .plaque{
+    position:relative; padding:1.4vh 1vw 1.4vh 3.4vw; border-radius:3px;
+    background: linear-gradient(180deg, var(--bronze-hi) 0%, var(--bronze-mid) 50%, var(--bronze-low) 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -2px 4px rgba(0,0,0,0.45), 0 2px 5px rgba(0,0,0,0.45);
+    transition: box-shadow .6s ease, filter .6s ease;
+  }
+  .plaque .heb{
+    font-size:2.6vh; font-weight:600; color:#2a1c0c; text-align:right;
+    text-shadow:0 1px 0 rgba(255,255,255,0.2); line-height:1.15;
+  }
+  .plaque .name{
+    font-family:'Cinzel', serif; font-size:2vh; letter-spacing:0.5px; font-weight:700;
+    color:#241708; text-shadow:0 1px 0 rgba(255,255,255,0.2); margin-top:0.4vh;
+  }
+  .plaque .date{ font-size:1.9vh; color:#3a2a12; margin-top:0.2vh; letter-spacing:0.5px; }
+  .bulb{
+    position:absolute; left:0.9vw; top:50%; transform:translateY(-50%);
+    width:1.6vh; height:1.6vh; border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #6b5638, #2a2013);
+    box-shadow: inset 0 0 2px rgba(0,0,0,0.8);
+  }
+  .plaque.reserved{
+    background: linear-gradient(180deg, #6b5636 0%, #4a3a22 60%, #362a17 100%);
+    display:flex; align-items:center; justify-content:center; padding:1.4vh 1vw;
+  }
+  .plaque.reserved .label{ font-family:'Cinzel', serif; font-size:1.8vh; letter-spacing:3px; color:rgba(30,20,10,0.55); }
+  .plaque.lit{
+    filter:saturate(1.15);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 4px rgba(0,0,0,0.35),
+      0 0 14px 4px rgba(255,207,107,0.55), 0 0 34px 10px rgba(255,180,60,0.35);
+    animation: flicker 3.2s ease-in-out infinite;
+  }
+  .plaque.lit .bulb{
+    background: radial-gradient(circle at 35% 30%, #fff3cf, var(--glow) 55%, #c98a2a 100%);
+    box-shadow: 0 0 6px 2px var(--glow), 0 0 16px 6px rgba(255,207,107,0.8);
+  }
+  @keyframes flicker{
+    0%,100%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 4px rgba(0,0,0,0.35),
+      0 0 14px 4px rgba(255,207,107,0.55), 0 0 34px 10px rgba(255,180,60,0.35); }
+    50%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 4px rgba(0,0,0,0.35),
+      0 0 18px 6px rgba(255,207,107,0.7), 0 0 42px 14px rgba(255,180,60,0.45); }
+  }
+  .footer{ margin-top:2vh; text-align:center; }
+  .footer .plate{
+    display:inline-block; padding:1.2vh 3.4vw; border-radius:20px;
+    background: linear-gradient(180deg, var(--bronze-hi), var(--bronze-low));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 5px rgba(0,0,0,0.5), 0 6px 16px rgba(0,0,0,0.5);
+  }
+  .footer .plate span{
+    font-family:'Cinzel', serif; font-size:2.2vh; letter-spacing:4px; font-weight:700;
+    color:#2a1c0c; text-shadow:0 1px 0 rgba(255,255,255,0.25);
+  }
+  .donor-plate{ margin-top:1.2vh; text-align:center; }
+  .donor-plate .inner{
+    display:inline-block; padding:0.8vh 2.6vw; border-radius:14px;
+    background: linear-gradient(180deg, var(--bronze-mid), var(--bronze-low));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -2px 4px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.4);
+  }
+  .donor-plate span{
+    font-family:'Cormorant Garamond', serif; font-style:italic; font-size:1.7vh; letter-spacing:1px;
+    color:#e9d6a8; text-shadow:0 1px 0 rgba(0,0,0,0.25);
+  }
+</style>
+</head>
+<body>
+  <div class="board-frame">
+    <div class="header">
+      <div class="eyebrow" id="headerEyebrow">IN LOVING MEMORY OF</div>
+      <div class="dedication" id="headerDedication">Loading…</div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="footer"><div class="plate"><span id="footerText"></span></div></div>
+    <div class="donor-plate"><div class="inner"><span id="donorText"></span></div></div>
+  </div>
+
+<script>
+  // ---- CONFIG (set per shul) ----
+  const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
+  const SLOTS_PER_COLUMN = 6;
+  const COLUMNS = 4;
+  const SHOW_ENGLISH_NAME = true; // TBD per your note — flip to false to hide
+
+  async function loadBoard(){
+    const res = await fetch(BOARD_API_URL);
+    const data = await res.json();
+    render(data);
+  }
+
+  function render(data){
+    document.getElementById('headerEyebrow').textContent = data.settings.HeaderEyebrow || '';
+    document.getElementById('headerDedication').textContent = data.settings.HeaderDedication || '';
+    document.getElementById('footerText').textContent = data.settings.FooterText || '';
+    document.getElementById('donorText').textContent = data.settings.DonorText || '';
+
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    const totalSlots = SLOTS_PER_COLUMN * COLUMNS;
+    const bySlot = {};
+    data.people.forEach(p => bySlot[p.slot] = p);
+
+    for(let c=0;c<COLUMNS;c++){
+      const col = document.createElement('div');
+      col.className = 'column';
+      for(let r=0;r<SLOTS_PER_COLUMN;r++){
+        const slotNum = c*SLOTS_PER_COLUMN + r + 1;
+        const p = bySlot[slotNum];
+        const el = document.createElement('div');
+        if(p){
+          el.className = 'plaque' + (p.lit ? ' lit' : '');
+          el.innerHTML = `
+            <div class="bulb"></div>
+            <div class="heb">${p.hebrewName || ''}</div>
+            ${SHOW_ENGLISH_NAME && p.name ? `<div class="name">${p.name}</div>` : ''}
+            <div class="date">${p.hebDay || ''} ${p.hebMonth || ''}</div>
+          `;
+        } else {
+          el.className = 'plaque reserved';
+          el.innerHTML = `<div class="label">RESERVED</div>`;
+        }
+        col.appendChild(el);
+      }
+      grid.appendChild(col);
+    }
+  }
+
+  loadBoard();
+  setInterval(loadBoard, 5 * 60 * 1000); // refresh every 5 minutes
+</script>
+</body>
+</html>
