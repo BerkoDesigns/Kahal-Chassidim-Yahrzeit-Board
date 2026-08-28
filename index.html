@@ -24,7 +24,7 @@
     display:flex; align-items:center; justify-content:center;
   }
   .board-frame{
-    width:92vw; height:92vh; max-width:1900px;
+    width:98vw; height:98vh; max-width:1900px;
     padding:2.2vh 2.2vw 1.6vh;
     display:flex; flex-direction:column;
     overflow:hidden;
@@ -150,7 +150,7 @@
 
 <script>
   // ---- CONFIG (set per shul) ----
-              const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
+                const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
   const SLOTS_PER_COLUMN = 6;
   const COLUMNS = 4;
   const SHOW_ENGLISH_NAME = true; // TBD per your note — flip to false to hide
@@ -208,14 +208,24 @@
   // and a single fixed font size can't safely fit every case.
   function fitPlaqueText(){
     document.fonts.ready.then(() => {
-      document.querySelectorAll('.plaque:not(.reserved)').forEach(el => {
+      const plaques = Array.from(document.querySelectorAll('.plaque:not(.reserved)'));
+      let globalScale = 1.0;
+
+      // Pass 1: find the smallest scale any single plaque needs to avoid clipping
+      plaques.forEach(el => {
         let scale = 1.0;
         el.style.setProperty('--pf-scale', scale);
         while (el.scrollHeight > el.clientHeight && scale > 0.5) {
           scale -= 0.05;
           el.style.setProperty('--pf-scale', scale);
         }
+        if (scale < globalScale) globalScale = scale;
       });
+
+      // Pass 2: apply that one scale to every plaque, so text size is
+      // uniform board-wide (matching a real plaque board) rather than
+      // varying per person based on name length.
+      plaques.forEach(el => el.style.setProperty('--pf-scale', globalScale));
     });
   }
 
