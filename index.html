@@ -24,13 +24,14 @@
     display:flex; align-items:center; justify-content:center;
   }
   .board-frame{
-    width:100vw; height:100vh; max-width:1900px;
+    width:calc(100vw - 3vmin); height:calc(100vh - 3vmin); max-width:1900px;
     padding:2.2vh 2.2vw 1.6vh;
     display:flex; flex-direction:column;
     overflow:hidden;
     background: linear-gradient(155deg, #3a2814 0%, #241708 55%, #140d05 100%);
     border-radius:14px;
-    box-shadow: 0 0 0 2px #0c0703, 0 0 0 6px #5c4321, 0 30px 70px rgba(0,0,0,0.7), inset 0 0 60px rgba(0,0,0,0.55);
+    border: 4px solid var(--gold);
+    box-shadow: 0 30px 70px rgba(0,0,0,0.7), inset 0 0 60px rgba(0,0,0,0.55);
   }
   .header{
     position:relative;
@@ -168,7 +169,7 @@
 
 <script>
   // ---- CONFIG (set per shul) ----
-                              const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
+                                    const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
   const SLOTS_PER_COLUMN = 6;
   const COLUMNS = 4;
   const SHOW_ENGLISH_NAME = true; // TBD per your note — flip to false to hide
