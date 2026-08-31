@@ -55,9 +55,9 @@
   .header .header-side{
     display:flex; align-items:center; gap:1vw;
   }
-  .header .header-candle{ flex-shrink:0; width:3vh; height:9vh; }
+  .header .header-candle{ flex-shrink:0; width:calc(var(--board-scale, 1) * 3vh); height:calc(var(--board-scale, 1) * 9vh); }
   .header .header-lamp{
-    flex-shrink:0; width:10vh; height:14.6vh;
+    flex-shrink:0; width:calc(var(--board-scale, 1) * 10vh); height:calc(var(--board-scale, 1) * 14.6vh);
     object-fit: contain;
     transform: translateY(1.2vh);
     position: relative; z-index: 3;
@@ -65,12 +65,12 @@
   }
   .header .shul-name{
     display:block; flex:1; text-align:center;
-    font-family:'Suez One', serif; font-size:6.6vh; letter-spacing:1px; font-weight:700;
+    font-family:'Suez One', serif; font-size:calc(var(--board-scale, 1) * 6.6vh); letter-spacing:1px; font-weight:700;
     color:#0c0704; text-shadow:none;
   }
   .header .header-subtitle{
     display:block; flex:1; text-align:center;
-    font-family:'Suez One', serif; font-size:6.6vh; letter-spacing:0.5px; font-weight:700;
+    font-family:'Suez One', serif; font-size:calc(var(--board-scale, 1) * 6.6vh); letter-spacing:0.5px; font-weight:700;
     color:#0c0704; text-shadow:none;
   }
   .grid{
@@ -90,7 +90,7 @@
   .plaque .heb{
     font-family:'Suez One', serif;
     font-size:calc(var(--pf-scale) * 11vh); font-weight:400; color:#0c0704; text-align:center;
-    text-shadow:none; line-height:1; white-space:nowrap;
+    text-shadow:none; line-height:1.05;
   }
   .plaque .name{
     font-family:'Cinzel', serif; font-size:calc(var(--pf-scale) * 3.8vh); letter-spacing:0.5px; font-weight:800;
@@ -133,17 +133,17 @@
     padding-bottom:0.5vh; margin-bottom:0.5vh;
     border-bottom: 2px solid var(--bronze-mid);
   }
-  .center-panel .panel-header .lamp-small{ width:5.4vh; height:9vh; flex-shrink:0; }
+  .center-panel .panel-header .lamp-small{ width:calc(var(--board-scale, 1) * 5.4vh); height:calc(var(--board-scale, 1) * 9vh); flex-shrink:0; }
   .center-panel .panel-header-text{ display:flex; flex-direction:column; align-items:center; }
   .center-panel .panel-header .panel-verse{
-    font-family:'Suez One', serif; font-size:2.6vh; color:#4a3319; font-style:italic;
+    font-family:'Suez One', serif; font-size:calc(var(--board-scale, 1) * 2.6vh); color:#4a3319; font-style:italic;
     margin-bottom:0.2vh; white-space:nowrap;
   }
   .center-panel .panel-header .panel-title{
-    font-family:'Suez One', serif; font-size:3.2vh; color:#4a3319;
+    font-family:'Suez One', serif; font-size:calc(var(--board-scale, 1) * 3.2vh); color:#4a3319;
   }
   .center-panel .panel-header .panel-today-date{
-    font-family:'Suez One', serif; font-size:2.4vh; color:#6b5636; margin-top:0.2vh;
+    font-family:'Suez One', serif; font-size:calc(var(--board-scale, 1) * 2.4vh); color:#6b5636; margin-top:0.2vh;
   }
   .center-panel .panel-list{
     flex:1; min-height:0;
@@ -188,7 +188,7 @@
   .center-panel .panel-donor{
     flex-shrink:0; text-align:center; margin-top:0.5vh; padding-top:0.4vh;
     border-top: 2px solid var(--bronze-mid);
-    font-family:'Suez One', serif; font-size:1.8vh; color:#4a3319;
+    font-family:'Suez One', serif; font-size:calc(var(--board-scale, 1) * 1.8vh); color:#4a3319;
   }
   .plaque.reserved .label{ font-family:'Cinzel', serif; font-size:1.8vh; letter-spacing:3px; color:rgba(30,20,10,0.55); }
   .plaque.lit{
@@ -288,7 +288,7 @@
   }
 
   // ---- CONFIG (set per shul) ----
-  const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim — same URL as before, since you're updating this Code.gs as a new version of the SAME deployment. Double check this still matches after you redeploy.
+  const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
   const ROWS_PER_COLUMN = 10; // fixed row count per column
   const BUFFER_COLUMNS_EACH_SIDE = 1; // extra column kept ahead of usage, on each side
   const SHOW_ENGLISH_NAME = false;
@@ -333,6 +333,19 @@
     const sideColumnsEach = Math.max(MIN_SIDE_COLUMNS, Math.ceil(totalColsNeeded / 2));
     const totalColumns = sideColumnsEach*2 + 2; // +2 for the center panel
     const centerStart = sideColumnsEach + 1; // 1-indexed
+
+    // Header/center-panel-header/donor text and icons scale up when the
+    // board is configured smaller (more breathing room per column) and
+    // back down if it ever grows busier than a standard 6-wide board —
+    // compared against that fixed reference, not against its own configured
+    // width, since comparing a setting against itself can never show it as
+    // "smaller." Using sqrt keeps the effect gentle rather than swinging
+    // wildly, and it's clamped so it never gets silly either direction.
+    const BASELINE_TOTAL_COLUMNS = 6;
+    const actualTotalColumnsInUse = sideColumnsEach * 2;
+    const boardScale = Math.max(0.85, Math.min(1.4, Math.sqrt(BASELINE_TOTAL_COLUMNS / actualTotalColumnsInUse)));
+    document.documentElement.style.setProperty('--board-scale', boardScale);
+
     grid.style.gridTemplateColumns = `repeat(${sideColumnsEach}, 1fr) 0.6fr 0.6fr repeat(${sideColumnsEach}, 1fr)`;
     grid.style.gridTemplateRows = `repeat(${ROWS_PER_COLUMN}, 1fr)`;
 
