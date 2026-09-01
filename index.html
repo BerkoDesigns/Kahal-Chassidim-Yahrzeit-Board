@@ -96,7 +96,7 @@
     font-family:'Cinzel', serif; font-size:calc(var(--pf-scale) * 3.8vh); letter-spacing:0.5px; font-weight:800;
     color:#0c0704; text-shadow:none; margin-top:0.5vh;
   }
-  .plaque .date{ font-family:'Suez One', serif; font-size:calc(var(--pf-scale) * 9.5vh); font-weight:400; color:#0c0704; margin-top:0.1vh; letter-spacing:0.5px; text-align:center; white-space:nowrap; }
+  .plaque .date{ font-family:'Suez One', serif; font-size:calc(var(--pf-scale) * 9.5vh); font-weight:400; color:#0c0704; margin-top:0.1vh; letter-spacing:0.5px; text-align:center; white-space:nowrap; text-shadow: 0 0 0.4px #0c0704, 0 0 0.4px #0c0704; }
   .plaque .mini-candle{
     position:absolute; top:50%; transform:translateY(-50%);
     width:2.2vh; flex-shrink:0;
@@ -304,7 +304,6 @@
 
   // ---- CONFIG (set per shul) ----
   const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
-  const BUFFER_COLUMNS_EACH_SIDE = 1; // extra column kept ahead of usage, on each side
   const SHOW_ENGLISH_NAME = false;
   const DEFAULT_TOTAL_PLAQUE_COLUMNS = 6; // used only if the Settings tab doesn't have TotalPlaqueColumns yet
   const DEFAULT_ROWS_PER_COLUMN = 10; // used only if the Settings tab doesn't have RowsPerColumn yet
@@ -343,17 +342,29 @@
     // panel ONLY — pulled out of their normal side-grid slot entirely while
     // it's their month (per your call: not duplicated in both places).
     const thisMonthPeople = data.people.filter(p => p.hebMonth === data.currentMonth);
-    const sidePeople = data.people.filter(p => p.hebMonth !== data.currentMonth);
+    const rawSidePeople = data.people.filter(p => p.hebMonth !== data.currentMonth);
 
-    // Symmetric growth: both sides always have the same column count,
-    // recomputed fresh from current usage each time — this keeps the
-    // center panel always genuinely centered. Per your call, a person's
-    // exact column can shift slightly during a growth event in exchange
-    // for that guarantee (row-major fill-order within a side stays right
-    // to left, outer to inner).
-    const maxSlotUsed = sidePeople.reduce((max,p)=>Math.max(max,p.slot||0), 0);
-    const totalColsNeeded = Math.ceil(maxSlotUsed / ROWS_PER_COLUMN) + 2*BUFFER_COLUMNS_EACH_SIDE;
-    const sideColumnsEach = Math.max(MIN_SIDE_COLUMNS, Math.ceil(totalColsNeeded / 2));
+    // Re-compact slot numbers fresh on every render, based on actual
+    // headcount — rather than trusting the raw slot numbers from the sheet
+    // as-is. Those can end up with gaps over time (anything ever deleted
+    // leaves a permanent hole), and a gap looks exactly like an empty
+    // RESERVED box sitting where a real person should be — which is also
+    // what was silently forcing extra columns to open up even with a small
+    // real headcount. Sorting by whatever slot order already exists keeps
+    // people in the same relative order as before; this never touches the
+    // sheet, it's purely how the board lays itself out.
+    const sidePeople = rawSidePeople
+      .slice()
+      .sort((a, b) => (a.slot || 0) - (b.slot || 0))
+      .map((p, i) => ({ ...p, slot: i + 1 }));
+
+    // Columns are strictly fixed to TotalPlaqueColumns, no exceptions — if
+    // actual headcount ever exceeds what columns×rows can hold, the extras
+    // simply won't get a rendered slot rather than the board growing wider
+    // to compensate. That's a deliberate, explicit choice: exact size
+    // control takes priority over auto-accommodating every possible
+    // headcount.
+    const sideColumnsEach = MIN_SIDE_COLUMNS;
     const totalColumns = sideColumnsEach*2 + 2; // +2 for the center panel
     const centerStart = sideColumnsEach + 1; // 1-indexed
 
