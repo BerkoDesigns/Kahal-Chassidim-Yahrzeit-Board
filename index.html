@@ -97,6 +97,17 @@
     color:#0c0704; text-shadow:none; margin-top:0.5vh;
   }
   .plaque .date{ font-family:'Suez One', serif; font-size:calc(var(--pf-scale) * 9.5vh); font-weight:400; color:#0c0704; margin-top:0.1vh; letter-spacing:0.5px; text-align:center; white-space:nowrap; }
+  .plaque .mini-candle{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:2.2vh; flex-shrink:0;
+    opacity:0.32; filter:grayscale(65%) brightness(0.8);
+    transition: opacity .6s ease, filter .6s ease;
+  }
+  .plaque .mini-candle.left{ left:0.5vw; }
+  .plaque .mini-candle.right{ right:0.5vw; }
+  .plaque.lit .mini-candle{
+    opacity:1; filter:none;
+  }
   .bulb{
     position:absolute; top:50%; transform:translateY(-50%);
     width:1.6vh; height:1.6vh; border-radius:50%;
@@ -121,7 +132,7 @@
     color:#4a3319; text-shadow:none; text-align:center;
   }
   .center-panel{
-    min-height:0; padding:1vh 1vw; border-radius:6px;
+    min-height:0; padding:1vh 0.4vw; border-radius:6px;
     overflow:hidden;
     background: linear-gradient(155deg, #eaddc0 0%, #dcc9a0 55%, #c9ae7c 100%);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -2px 6px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.3);
@@ -151,8 +162,8 @@
   }
   .center-row{
     flex:0 0 auto; position:relative; overflow:hidden;
-    display:flex; align-items:center; justify-content:center; gap:0.7vw;
-    padding:0.6vh 0.6vw; border-radius:3px;
+    display:flex; align-items:center; justify-content:center; gap:0.3vw;
+    padding:0.6vh 0.3vw; border-radius:3px;
     background: linear-gradient(180deg, var(--bronze-hi) 0%, var(--bronze-mid) 100%);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 3px rgba(0,0,0,0.35);
     transition: background .5s ease, box-shadow .5s ease;
@@ -293,10 +304,10 @@
 
   // ---- CONFIG (set per shul) ----
   const BOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyn2bOEYISpbK_OdNXMxLIootm5-L6JlommTJwxbrTWvnod_3f5C10-2X5NhreZNS9y/exec'; // Kahal Chassidim
-  const ROWS_PER_COLUMN = 10; // fixed row count per column
   const BUFFER_COLUMNS_EACH_SIDE = 1; // extra column kept ahead of usage, on each side
   const SHOW_ENGLISH_NAME = false;
   const DEFAULT_TOTAL_PLAQUE_COLUMNS = 6; // used only if the Settings tab doesn't have TotalPlaqueColumns yet
+  const DEFAULT_ROWS_PER_COLUMN = 10; // used only if the Settings tab doesn't have RowsPerColumn yet
 
   async function loadBoard(){
     const res = await fetch(BOARD_API_URL);
@@ -316,6 +327,14 @@
       totalPlaqueColumns = DEFAULT_TOTAL_PLAQUE_COLUMNS;
     }
     const MIN_SIDE_COLUMNS = totalPlaqueColumns / 2;
+
+    // Rows per column — same idea: fewer empty RESERVED rows for a smaller
+    // congregation means each plaque also gets more room to be bigger.
+    // Falls back to the default if the sheet doesn't have this row yet.
+    let ROWS_PER_COLUMN = parseInt(data.settings.RowsPerColumn, 10);
+    if (!ROWS_PER_COLUMN || ROWS_PER_COLUMN < 1) {
+      ROWS_PER_COLUMN = DEFAULT_ROWS_PER_COLUMN;
+    }
 
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
@@ -362,38 +381,7 @@
     for(let k=0;k<sideColumnsEach;k++) PHYSICAL_COLS.push(totalColumns - k);
     for(let k=0;k<sideColumnsEach;k++) PHYSICAL_COLS.push(centerStart - 1 - k);
 
-    const totalSideSlots = sideColumnsEach * 2 * ROWS_PER_COLUMN;
-    for(let i=0;i<totalSideSlots;i++){
-      const colIndex = Math.floor(i / ROWS_PER_COLUMN);
-      const r = i % ROWS_PER_COLUMN;
-      const c = PHYSICAL_COLS[colIndex];
-      const slotNum = i + 1;
-      const p = bySlot[slotNum];
-      const el = document.createElement('div');
-      el.style.gridColumn = c;
-      el.style.gridRow = r+1;
-      if(p){
-        const hasName = SHOW_ENGLISH_NAME && p.name;
-        el.className = 'plaque' + (hasName ? '' : ' no-name');
-        el.innerHTML = `
-          <div class="heb">${p.displayName || ''}</div>
-          ${hasName ? `<div class="name">${p.name}</div>` : ''}
-          <div class="date">${p.hebDateDisplay || ''}</div>
-        `;
-      } else {
-        el.className = 'plaque reserved';
-        el.innerHTML = `<div class="label">RESERVED</div>`;
-      }
-      grid.appendChild(el);
-    }
-
-    // Center panel: full height, spans the 2 reserved center columns.
-    const panel = document.createElement('div');
-    panel.className = 'center-panel';
-    panel.style.gridColumn = `${centerStart} / span 2`;
-    panel.style.gridRow = `1 / span ${ROWS_PER_COLUMN}`;
-
-    const buildCandle = (slot) => `<svg class="candle" viewBox="0 0 30 40">
+    const buildCandle = (slot, extraClass) => `<svg class="candle${extraClass ? ' ' + extraClass : ''}" viewBox="0 0 30 40">
       <defs>
         <radialGradient id="candleGlow${slot}" cx="50%" cy="30%" r="60%">
           <stop offset="0%" stop-color="#fff3c4" stop-opacity="0.9"/>
@@ -412,6 +400,40 @@
         <animate attributeName="opacity" values="0.9;1;0.9" dur="1.8s" repeatCount="indefinite"/>
       </path>
     </svg>`;
+
+    const totalSideSlots = sideColumnsEach * 2 * ROWS_PER_COLUMN;
+    for(let i=0;i<totalSideSlots;i++){
+      const colIndex = Math.floor(i / ROWS_PER_COLUMN);
+      const r = i % ROWS_PER_COLUMN;
+      const c = PHYSICAL_COLS[colIndex];
+      const slotNum = i + 1;
+      const p = bySlot[slotNum];
+      const el = document.createElement('div');
+      el.style.gridColumn = c;
+      el.style.gridRow = r+1;
+      if(p){
+        const hasName = SHOW_ENGLISH_NAME && p.name;
+        el.className = 'plaque' + (hasName ? '' : ' no-name') + (p.lit ? ' lit' : '');
+        el.innerHTML = `
+          ${buildCandle('p'+slotNum+'_l', 'mini-candle left')}
+          <div class="heb">${p.displayName || ''}</div>
+          ${hasName ? `<div class="name">${p.name}</div>` : ''}
+          <div class="date">${p.hebDateDisplay || ''}</div>
+          ${buildCandle('p'+slotNum+'_r', 'mini-candle right')}
+        `;
+      } else {
+        el.className = 'plaque reserved';
+        el.innerHTML = `<div class="label">RESERVED</div>`;
+      }
+      grid.appendChild(el);
+    }
+
+    // Center panel: full height, spans the 2 reserved center columns.
+    const panel = document.createElement('div');
+    panel.className = 'center-panel';
+    panel.style.gridColumn = `${centerStart} / span 2`;
+    panel.style.gridRow = `1 / span ${ROWS_PER_COLUMN}`;
+
 
     const rowsHtml = thisMonthPeople
       .slice().sort((a,b)=>a.hebDay-b.hebDay)
